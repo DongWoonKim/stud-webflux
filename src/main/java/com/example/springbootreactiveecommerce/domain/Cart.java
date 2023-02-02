@@ -1,9 +1,13 @@
 package com.example.springbootreactiveecommerce.domain;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Getter @Setter
 public class Cart {
 
     private @Id String id;
@@ -11,8 +15,14 @@ public class Cart {
 
     private Cart() {}
 
+    public Cart(String id) {
+        this(id, new ArrayList<>());
+    }
+
     public Cart(String id, List<CartItem> cartItems) {
         this.id = id;
         this.cartItems = cartItems;
     }
+
+
 }

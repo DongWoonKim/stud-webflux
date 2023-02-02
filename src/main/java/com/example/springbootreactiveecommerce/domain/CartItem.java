@@ -1,5 +1,9 @@
 package com.example.springbootreactiveecommerce.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter @Setter
 public class CartItem {
 
     private Item item;
@@ -13,5 +17,7 @@ public class CartItem {
     }
 
 
-
+    public void increment() {
+        ++this.quantity;
+    }
 }
