@@ -25,7 +25,9 @@ dependencies {
     implementation group: 'org.mongodb', name: 'mongodb-driver-sync'
     compileOnly 'org.projectlombok:lombok'
     compileOnly 'org.springframework.boot:spring-boot-devtools'
+    compileOnly group: 'io.projectreactor.tools', name: 'blockhound', version: '1.0.7.RELEASE'
     annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'io.projectreactor.tools:blockhound-junit-platform:1.0.6.RELEASE'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation group: 'de.flapdoodle.embed', name: 'de.flapdoodle.embed.mongo'
@@ -34,3 +36,12 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.withType(Test).all {
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_19)) {
+        jvmArgs += [
+                "-XX:+AllowRedefinitionToAddDeleteMethods"
+        ]
+    }
+}
+
