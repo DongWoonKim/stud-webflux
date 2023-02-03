@@ -10,6 +10,7 @@ import com.example.springbootreactiveecommerce.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import static org.springframework.data.domain.ExampleMatcher.*;
+import static org.springframework.data.domain.ExampleMatcher.StringMatcher.*;
 
 @Slf4j
 @Controller
@@ -44,7 +48,7 @@ public class HomeController {
         log.info("home cont");
         return Mono.just(Rendering.view("home.html") // <2>
                 .modelAttribute("items", //
-                        this.itemRepository.findAll()) // <3>
+                        this.itemRepository.findAll().doOnNext(System.out::println)) // <3>
                 .modelAttribute("cart", //
                         this.cartRepository.findById("My Cart") // <4>
                                 .defaultIfEmpty(new Cart("My Cart")))
@@ -63,11 +67,29 @@ public class HomeController {
         , @RequestParam(required = false) String description
         , @RequestParam boolean useAnd
     ) {
+        log.info("search cont");
+
         return Mono.just(
                 Rendering.view("home.html")
                         .modelAttribute("items", this.itemRepository.findAll())
                         .modelAttribute("cart",  this.cartRepository.findById("My Cart").defaultIfEmpty(new Cart("My Cart")))
                         .modelAttribute("results", this.inventoryService.searchByExample(name, description, useAnd))
+                        .build()
+        );
+    }
+
+    @GetMapping("/search/v2")
+    Mono<Rendering> searchV2 (
+        @RequestParam(required = false) String name
+        , @RequestParam(required = false) String description
+        , @RequestParam boolean useAnd
+    ) {
+        log.info("search v2 cont");
+        return Mono.just(
+                Rendering.view("home.html")
+                        .modelAttribute("items", this.itemRepository.findAll())
+                        .modelAttribute("cart", this.cartRepository.findById("My Cart").defaultIfEmpty(new Cart("My Cart")))
+                        .modelAttribute("results", this.inventoryService.searchByFluentExample(name, description, useAnd))
                         .build()
         );
     }
