@@ -1,6 +1,10 @@
 spring:
   thymeleaf:
     cache: false
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
 
 logging:
   level:

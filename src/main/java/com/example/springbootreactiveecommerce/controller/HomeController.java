@@ -12,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.result.view.Rendering;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -27,71 +24,47 @@ import static org.springframework.data.domain.ExampleMatcher.StringMatcher.*;
 @Controller
 public class HomeController {
 
-    private final CartService cartService;
-    private final ItemRepository itemRepository;
-    private final CartRepository cartRepository;
-    private final InventoryService inventoryService;
+    private InventoryService inventoryService;
 
-
-    public HomeController(
-        CartService cartService, ItemRepository itemRepository,
-        CartRepository cartRepository, InventoryService inventoryService
-    ) {
-        this.cartService = cartService;
-        this.itemRepository = itemRepository;
-        this.cartRepository = cartRepository;
+    public HomeController(InventoryService inventoryService) {
         this.inventoryService = inventoryService;
     }
+    // end::1[]
 
+    // tag::2[]
     @GetMapping("/")
-    Mono<Rendering> home() {
-        log.info("home cont");
+    Mono<Rendering> home() { // <1>
         return Mono.just(Rendering.view("home.html") // <2>
-                .modelAttribute("items", //
-                        this.itemRepository.findAll().doOnNext(System.out::println)) // <3>
-                .modelAttribute("cart", //
-                        this.cartRepository.findById("My Cart") // <4>
-                                .defaultIfEmpty(new Cart("My Cart")))
+                .modelAttribute("items", this.inventoryService.getInventory()) // <3>
+                .modelAttribute("cart", this.inventoryService.getCart("My Cart") // <4>
+                        .defaultIfEmpty(new Cart("My Cart")))
                 .build());
     }
+    // end::2[]
 
     @PostMapping("/add/{id}")
     Mono<String> addToCart(@PathVariable String id) {
-        return this.cartService.addToCart("My Cart", id)
+        return this.inventoryService.addItemToCart("My Cart", id)
                 .thenReturn("redirect:/");
     }
 
-    @GetMapping("/search")
-    Mono<Rendering> search (
-        @RequestParam(required = false) String name
-        , @RequestParam(required = false) String description
-        , @RequestParam boolean useAnd
-    ) {
-        log.info("search cont");
-
-        return Mono.just(
-                Rendering.view("home.html")
-                        .modelAttribute("items", this.itemRepository.findAll())
-                        .modelAttribute("cart",  this.cartRepository.findById("My Cart").defaultIfEmpty(new Cart("My Cart")))
-                        .modelAttribute("results", this.inventoryService.searchByExample(name, description, useAnd))
-                        .build()
-        );
+    @DeleteMapping("/remove/{id}")
+    Mono<String> removeFromCart(@PathVariable String id) {
+        return this.inventoryService.removeOneFromCart("My Cart", id)
+                .thenReturn("redirect:/");
     }
 
-    @GetMapping("/search/v2")
-    Mono<Rendering> searchV2 (
-        @RequestParam(required = false) String name
-        , @RequestParam(required = false) String description
-        , @RequestParam boolean useAnd
-    ) {
-        log.info("search v2 cont");
-        return Mono.just(
-                Rendering.view("home.html")
-                        .modelAttribute("items", this.itemRepository.findAll())
-                        .modelAttribute("cart", this.cartRepository.findById("My Cart").defaultIfEmpty(new Cart("My Cart")))
-                        .modelAttribute("results", this.inventoryService.searchByFluentExample(name, description, useAnd))
-                        .build()
-        );
+    @PostMapping
+    Mono<String> createItem(@ModelAttribute Item newItem) {
+        return this.inventoryService.saveItem(newItem) //
+                .thenReturn("redirect:/");
+    }
+
+    @PostMapping("/delete/{id}")
+    Mono<String> deleteItem(@PathVariable String id) {
+        System.out.println("hihihihi");
+        return this.inventoryService.deleteItem(id)
+                .thenReturn("redirect:/");
     }
 
 }

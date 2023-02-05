@@ -15,9 +15,6 @@ public class SpringBootReactiveEcommerceApplication {
                 .allowBlockingCallsInside(
                         TemplateEngine.class.getCanonicalName(), "process"
                 ).install();
-
-//        BlockHound.install();
-
         SpringApplication.run(SpringBootReactiveEcommerceApplication.class, args);
     }
 
