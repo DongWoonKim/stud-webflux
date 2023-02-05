@@ -1,6 +1,5 @@
 package com.example.springbootreactiveecommerce.config;
 
-import com.example.springbootreactiveecommerce.domain.Item;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoOperations;
